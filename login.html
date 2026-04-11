@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SOFISTIQ — Acesso Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Tajawal:wght@200;300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --black:#0a0806; --dark:#110e0a; --surface:#1a1510;
+      --gold:#c9973a; --gold2:#e8c074; --gold-dim:rgba(201,151,58,0.12);
+      --cream:#f0e8d8; --muted:#6b5e4a; --border:rgba(201,151,58,0.22);
+      --text:#d4c4a8;
+    }
+    body {
+      background:var(--black); color:var(--text);
+      font-family:'Tajawal',sans-serif; font-weight:300;
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    body::after {
+      content:''; position:fixed; inset:0; z-index:9999; pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      opacity:.4;
+    }
+    .bg-glow { position:absolute; width:700px; height:700px; background:radial-gradient(circle,rgba(201,151,58,0.07) 0%,transparent 65%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .bg-arabic { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-family:'Tajawal',sans-serif; font-weight:200; font-size:400px; color:rgba(201,151,58,0.025); user-select:none; pointer-events:none; white-space:nowrap; line-height:1; }
+    .bg-lines { position:absolute; inset:0; background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:60px 60px; mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 100%); opacity:.3; }
+
+    .login-card {
+      position:relative; z-index:10;
+      width:100%; max-width:440px;
+      background:var(--surface); border:1px solid var(--border);
+      padding:56px 52px 52px;
+      animation:cardIn 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(30px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);} }
+    .login-card::before { content:''; position:absolute; top:0; left:10%; right:10%; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+
+    .card-logo { text-align:center; margin-bottom:40px; }
+    .card-logo-text { font-family:'Playfair Display',serif; font-size:28px; color:var(--gold); letter-spacing:0.3em; font-weight:500; }
+    .card-logo-sub { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+    .card-logo-arabic { font-family:'Tajawal',sans-serif; font-weight:200; font-size:18px; color:rgba(201,151,58,0.4); margin-top:4px; }
+
+    h1 { font-family:'Playfair Display',serif; font-size:22px; font-weight:400; color:var(--cream); margin-bottom:8px; text-align:center; }
+    .sub { font-size:12px; color:var(--muted); text-align:center; margin-bottom:40px; letter-spacing:0.05em; }
+
+    .field { margin-bottom:20px; }
+    label { display:block; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+    input[type=text], input[type=password] {
+      width:100%; padding:13px 18px;
+      background:var(--dark); border:1px solid var(--border);
+      color:var(--cream); font-family:'Tajawal',sans-serif;
+      font-size:15px; outline:none;
+      transition:border-color 0.3s, box-shadow 0.3s;
+    }
+    input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,151,58,0.08); }
+    input::placeholder { color:var(--muted); }
+
+    .password-wrap { position:relative; }
+    .toggle-pass { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); cursor:pointer; font-size:15px; transition:color 0.2s; }
+    .toggle-pass:hover { color:var(--gold); }
+
+    .error-msg { display:none; background:rgba(201,96,58,0.12); border:1px solid rgba(201,96,58,0.35); color:#e8835a; padding:10px 16px; margin-bottom:20px; font-size:12px; }
+    .error-msg.show { display:block; }
+
+    .btn-login {
+      width:100%; padding:15px;
+      background:var(--gold); color:var(--black);
+      border:none; font-family:'Tajawal',sans-serif; font-weight:500;
+      font-size:12px; letter-spacing:0.3em;
+      text-transform:uppercase; cursor:pointer; transition:all 0.3s; margin-top:8px;
+    }
+    .btn-login:hover { background:var(--gold2); }
+
+    .deco { display:flex; align-items:center; gap:12px; margin-top:36px; }
+    .deco::before,.deco::after { content:''; flex:1; height:1px; background:var(--border); }
+    .deco span { color:var(--gold); font-size:12px; opacity:0.5; }
+
+    .back-link { display:block; text-align:center; margin-top:24px; font-size:11px; letter-spacing:0.15em; color:var(--muted); text-decoration:none; transition:color 0.3s; }
+    .back-link:hover { color:var(--gold); }
+  </style>
+</head>
+<body>
+
+<div class="bg-lines"></div>
+<div class="bg-glow"></div>
+<div class="bg-arabic">عطر</div>
+
+<div class="login-card">
+  <div class="card-logo">
+    <div class="card-logo-text">SOFISTIQ</div>
+    <div class="card-logo-sub">Perfumaria Árabe</div>
+    <div class="card-logo-arabic">لوحة التحكم</div>
+  </div>
+
+  <h1>Acesso Restrito</h1>
+  <p class="sub">Painel Administrativo</p>
+
+  <div class="error-msg" id="errorMsg">Usuário ou senha incorretos.</div>
+
+  <div class="field">
+    <label>Usuário</label>
+    <input type="text" id="userInput" placeholder="Digite o usuário" autocomplete="username"/>
+  </div>
+  <div class="field">
+    <label>Senha</label>
+    <div class="password-wrap">
+      <input type="password" id="passInput" placeholder="••••••••••" autocomplete="current-password"/>
+      <button class="toggle-pass" id="togglePass" type="button">👁</button>
+    </div>
+  </div>
+
+  <button class="btn-login" id="btnLogin">Entrar</button>
+
+  <div class="deco"><span>◆</span></div>
+  <a href="index.html" class="back-link">← Voltar ao catálogo</a>
+  <div style="margin-top: 12px; text-align: center; font-size: 10px; color: var(--muted); letter-spacing: 0.1em;">
+    <a href="admin.html" style="color: var(--gold); text-decoration: none; transition: color 0.3s;">Ir para Admin</a>
+  </div>
+</div>
+
+<script>
+  // Credenciais fixas
+  const USUARIO = 'Parfumssofistiq';
+  const SENHA   = '987654321';
+
+  // Se já está logado, vai direto pro admin
+  if (sessionStorage.getItem('sofistiq_admin') === 'true') {
+    window.location.href = 'admin.html';
+  }
+
+  document.getElementById('togglePass').addEventListener('click', function() {
+    const p = document.getElementById('passInput');
+    p.type = p.type === 'password' ? 'text' : 'password';
+    this.textContent = p.type === 'password' ? '👁' : '🙈';
+  });
+
+  document.getElementById('btnLogin').addEventListener('click', login);
+  document.getElementById('passInput').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+  document.getElementById('userInput').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+
+  function login() {
+    const user = document.getElementById('userInput').value.trim();
+    const pass = document.getElementById('passInput').value;
+    const err  = document.getElementById('errorMsg');
+
+    if (user === USUARIO && pass === SENHA) {
+      sessionStorage.setItem('sofistiq_admin', 'true');
+      window.location.href = 'admin.html';
+    } else {
+      err.classList.add('show');
+      document.getElementById('passInput').value = '';
+      document.getElementById('passInput').focus();
+    }
+  }
+</script>
+</body>
+</html>
