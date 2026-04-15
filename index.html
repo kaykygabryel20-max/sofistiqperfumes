@@ -117,17 +117,19 @@
     .card-details-btn:hover { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
 
     /* Modal */
-    .modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(5,4,3,0.88); backdrop-filter:blur(12px); display:none; align-items:center; justify-content:center; padding:40px; }
+    .modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(5,4,3,0.88); backdrop-filter:blur(12px); display:none; align-items:center; justify-content:center; padding:20px; }
     .modal-overlay.open { display:flex; }
-    .modal { background:var(--surface); border:1px solid var(--border); max-width:880px; width:100%; display:grid; grid-template-columns:1fr 1fr; position:relative; overflow:hidden; animation:modalIn 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
+    .modal { background:var(--surface); border:1px solid var(--border); max-width:880px; width:100%; display:grid; grid-template-columns:1fr 1fr; position:relative; overflow:hidden; animation:modalIn 0.4s cubic-bezier(0.25,0.46,0.45,0.94); max-height:90vh; }
     @keyframes modalIn { from{opacity:0;transform:scale(0.96) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);} }
     .modal-close { position:absolute; top:20px; right:20px; z-index:2; background:none; border:1px solid var(--border); width:36px; height:36px; color:var(--muted); font-size:16px; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; }
     .modal-close:hover { border-color:var(--gold); color:var(--gold); }
-    .modal-img-side { position:relative; background:var(--dark); min-height:520px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .modal-img-side { position:relative; background:var(--dark); min-height:520px; display:flex; align-items:center; justify-content:center; overflow:hidden; max-height:90vh; }
     .modal-img-side img { width:100%; height:100%; object-fit:cover; opacity:0.9; }
     .modal-img-side::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(201,151,58,0.08) 0%,transparent 60%); pointer-events:none; }
     .modal-img-side .badge-encomenda { top:20px; left:20px; right:auto; }
-    .modal-info { padding:52px 44px; overflow-y:auto; max-height:80vh; }
+    .modal-info { display:flex; flex-direction:column; overflow:hidden; max-height:90vh; }
+    .modal-info-scroll { padding:52px 44px 28px; overflow-y:auto; flex:1; }
+    .modal-info-footer { padding:20px 44px 32px; border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; }
     .modal-family { font-size:9px; letter-spacing:0.45em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
     .modal-name { font-family:'Playfair Display',serif; font-size:38px; font-weight:400; color:var(--cream); line-height:1.1; margin-bottom:10px; }
     .modal-inspired { font-size:13px; color:var(--muted); font-style:italic; margin-bottom:28px; padding-bottom:28px; border-bottom:1px solid var(--border); }
@@ -174,7 +176,7 @@
       .section-header,.filters,.catalog,.deco-line { padding-left:20px; padding-right:20px; }
       .catalog { grid-template-columns:1fr 1fr; gap:2px; }
       .modal { grid-template-columns:1fr; } .modal-img-side { min-height:240px; }
-      .modal-info { padding:28px 24px; }
+      .modal-info-scroll { padding:24px 24px 16px; } .modal-info-footer { padding:16px 24px 24px; }
       footer { flex-direction:column; gap:12px; text-align:center; padding:28px 20px; }
       .wa-float { bottom:20px; right:20px; width:54px; height:54px; }
     }
@@ -340,23 +342,28 @@ function openModal(p) {
   const msg = encodeURIComponent(`Olá! Tenho interesse no perfume *${p.nome}*${p.inspirado_em?` (inspirado em ${p.inspirado_em})`:''}. Gostaria de mais informações!`);
   const waUrl = `${WA}?text=${msg}`;
 
+
   document.getElementById('modalInfoContent').innerHTML = `
-    <p class="modal-family">${(p.familia||'').toUpperCase()}</p>
-    <h2 class="modal-name">${p.nome}</h2>
-    ${p.inspirado_em?`<p class="modal-inspired">Inspirado em: <strong style="color:var(--gold)">${p.inspirado_em}</strong></p>`:'<p class="modal-inspired" style="min-height:0;padding-bottom:28px;margin-bottom:0;border-bottom:1px solid var(--border);"></p>'}
-    <p class="modal-desc">${p.descricao||''}</p>
-    ${notas?`<p class="notes-label">Notas Olfativas</p><div class="notes-list">${notas}</div>`:''}
-    <div class="modal-price-row">
-      <div>
-        <div class="modal-price">R$ ${Number(p.preco).toFixed(2).replace('.',',')}</div>
-        <div class="modal-volume">${p.volume||''}</div>
-      </div>
-      ${!p.em_estoque?'<span class="modal-encomenda-badge show">Sob Encomenda</span>':''}
+    <div class="modal-info-scroll">
+      <p class="modal-family">${(p.familia||'').toUpperCase()}</p>
+      <h2 class="modal-name">${p.nome}</h2>
+      ${p.inspirado_em?`<p class="modal-inspired">Inspirado em: <strong style="color:var(--gold)">${p.inspirado_em}</strong></p>`:'<p class="modal-inspired" style="min-height:0;padding-bottom:28px;margin-bottom:0;border-bottom:1px solid var(--border);"></p>'}
+      <p class="modal-desc">${p.descricao||''}</p>
+      ${notas?`<p class="notes-label">Notas Olfativas</p><div class="notes-list">${notas}</div>`:''}
     </div>
-    <a href="${waUrl}" target="_blank" rel="noopener" class="modal-cta${!p.em_estoque?' encomenda':''}">
-      ${WA_SVG}
-      ${p.em_estoque?'Comprar pelo WhatsApp':'Solicitar por Encomenda'}
-    </a>`;
+    <div class="modal-info-footer">
+      <div class="modal-price-row">
+        <div>
+          <div class="modal-price">R$ ${Number(p.preco).toFixed(2).replace('.',',')}</div>
+          <div class="modal-volume">${p.volume||''}</div>
+        </div>
+        ${!p.em_estoque?'<span class="modal-encomenda-badge show">Sob Encomenda</span>':''}
+      </div>
+      <a href="${waUrl}" target="_blank" rel="noopener" class="modal-cta${!p.em_estoque?' encomenda':''}">
+        ${WA_SVG}
+        ${p.em_estoque?'Comprar pelo WhatsApp':'Solicitar por Encomenda'}
+      </a>
+    </div>`;
 
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
